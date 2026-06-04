@@ -55,6 +55,7 @@ Presenting.config = {
     width = 60,
     height = nil,
     vertical_center = true,
+    horizontal_center = true,
     show_notes = true,
     notes_height = 5,
   },
@@ -438,6 +439,16 @@ H.set_slide_content = function(state, slide)
     local padding = math.max(0, math.floor((win_height - #raw_lines) / 2))
     for _ = 1, padding do
       table.insert(raw_lines, 1, "")
+    end
+  end
+
+  if Presenting.config.options.horizontal_center then
+    for i, line in ipairs(raw_lines) do
+      if line ~= "" then
+        local trimmed = line:match("^%s*(.-)%s*$")
+        local pad = math.floor((Presenting.config.options.width - #trimmed) / 2)
+        if pad > 0 then raw_lines[i] = string.rep(" ", pad) .. trimmed end
+      end
     end
   end
 
