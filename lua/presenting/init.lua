@@ -79,6 +79,7 @@ Presenting.config = {
 --- Toggle presenting mode on/off for the current buffer.
 ---@param separator string|nil
 Presenting.toggle = function(separator)
+  if type(separator) == "table" then separator = nil end
   if H.in_presenting_mode() then
     Presenting.quit()
   else
@@ -94,13 +95,7 @@ Presenting.start = function(separator)
     return
   end
 
-  if type(separator) == "table" then
-    -- FIXME: why is separator a table when I don't pass anything?
-    -- into nil. I don't know why I get a table here when I don't pass anything.
-    -- print(vim.inspect(separator))
-    -- Workaround: turn not passed separator
-    separator = nil
-  end
+  if type(separator) == "table" then separator = nil end
 
   local filetype = vim.bo.filetype
   separator = separator or Presenting.config.separator[filetype]
@@ -214,6 +209,7 @@ Presenting.resize = function()
   vim.api.nvim_win_set_config(Presenting._state.background_win, window_config.background)
   vim.api.nvim_win_set_config(Presenting._state.footer_win, window_config.footer)
   vim.api.nvim_win_set_config(Presenting._state.slide_win, window_config.slide)
+  H.set_slide_content(Presenting._state, Presenting._state.slide)
 end
 
 Presenting.dev_mode = function()
@@ -247,8 +243,8 @@ end
 ---@private
 H.get_win_configs = function()
   local slide_width = Presenting.config.options.width
-  local width = vim.api.nvim_get_option("columns")
-  local height = vim.api.nvim_get_option("lines")
+  local width = vim.o.columns
+  local height = vim.o.lines
   local offset = math.ceil((width - slide_width) / 2)
   return {
     background = {
@@ -363,27 +359,28 @@ end
 ---@private
 H.configure_slide_buffer = function(buf)
   -- TODO: make this configurable via config
-  vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(buf, "filetype", Presenting._state.filetype)
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  vim.bo[buf].buftype = "nofile"
+  vim.bo[buf].filetype = Presenting._state.filetype
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].modifiable = false
 end
 
 ---@param state table
 ---@param slide integer
 ---@private
 H.set_slide_content = function(state, slide)
-  local orig_modifiable = vim.api.nvim_buf_get_option(state.slide_buf, "modifiable")
-  vim.api.nvim_buf_set_option(state.slide_buf, "modifiable", true)
   state.slide = slide
-  vim.api.nvim_buf_set_lines(
-    state.slide_buf,
-    0,
-    -1,
-    false,
-    vim.split(state.slides[state.slide], "\n")
-  )
-  vim.api.nvim_buf_set_option(state.slide_buf, "modifiable", orig_modifiable)
+  local slide_lines = vim.split(state.slides[slide], "\n")
+  local win_height = vim.api.nvim_win_get_height(state.slide_win)
+  local padding = math.max(0, math.floor((win_height - #slide_lines) / 2))
+  for _ = 1, padding do
+    table.insert(slide_lines, 1, "")
+  end
+
+  local orig_modifiable = vim.bo[state.slide_buf].modifiable
+  vim.bo[state.slide_buf].modifiable = true
+  vim.api.nvim_buf_set_lines(state.slide_buf, 0, -1, false, slide_lines)
+  vim.bo[state.slide_buf].modifiable = orig_modifiable
 
   local footer_text = "presenting.nvim | " .. state.slide .. "/" .. state.n_slides
   vim.api.nvim_buf_set_lines(state.footer_buf, 0, -1, false, { footer_text })
@@ -395,12 +392,15 @@ end
 H.set_slide_keymaps = function(buf, mappings)
   for k, v in pairs(mappings) do
     if type(v) == "string" then
-      local cmd = ":lua require('presenting')." .. v .. "()<CR>"
-      vim.api.nvim_buf_set_keymap(buf, "n", k, cmd, { noremap = true, silent = true })
+      vim.keymap.set(
+        "n",
+        k,
+        "<cmd>lua require('presenting')." .. v .. "()<CR>",
+        { buffer = buf, noremap = true, silent = true }
+      )
     elseif type(v) == "function" then
-      vim.api.nvim_buf_set_keymap(buf, "n", k, "", { callback = v, noremap = true, silent = true })
+      vim.keymap.set("n", k, v, { buffer = buf, noremap = true, silent = true })
     end
-    -- no keymap on nil 🤷
   end
 end
 
