@@ -25,7 +25,7 @@ Presenting.setup = function(config)
   vim.api.nvim_create_user_command(
     "PresentingGoto",
     function(opts) Presenting.goto_slide(tonumber(opts.args)) end,
-    { nargs = 1, complete = "number" }
+    { nargs = 1 }
   )
   vim.api.nvim_create_user_command("PresentingOverview", Presenting.overview, {})
   vim.api.nvim_create_user_command("PresentingDevMode", Presenting.dev_mode, {})
@@ -251,7 +251,7 @@ H.get_win_configs = function(state)
   local height = vim.o.lines
   local offset = math.ceil((width - slide_width) / 2)
 
-  local notes_h = 0
+  local notes_h = 1
   if state and state.slide and Presenting.config.options.show_notes then
     local notes_text = state.notes and state.notes[state.slide]
     if notes_text then
@@ -259,7 +259,7 @@ H.get_win_configs = function(state)
     end
   end
 
-  local slide_height = Presenting.config.options.height or (height - 5 - notes_h)
+  local slide_height = math.max(Presenting.config.options.height or (height - 5 - notes_h), 1)
 
   return {
     background = {
@@ -471,22 +471,21 @@ H.update_footer = function(state)
 end
 
 H.update_notes = function(state)
-  if not Presenting.config.options.show_notes then
+  local has_notes = Presenting.config.options.show_notes
+    and state.notes
+    and state.notes[state.slide]
+
+  if not has_notes then
     if state.notes_win and vim.api.nvim_win_is_valid(state.notes_win) then
-      vim.api.nvim_win_set_config(state.notes_win, { height = 0 })
+      vim.api.nvim_win_set_config(state.notes_win, { height = 1 })
+      vim.bo[state.notes_buf].modifiable = true
+      vim.api.nvim_buf_set_lines(state.notes_buf, 0, -1, false, { "" })
+      vim.bo[state.notes_buf].modifiable = false
     end
     return
   end
 
-  local notes_text = state.notes and state.notes[state.slide]
-  if not notes_text then
-    if state.notes_win and vim.api.nvim_win_is_valid(state.notes_win) then
-      vim.api.nvim_win_set_config(state.notes_win, { height = 0 })
-    end
-    return
-  end
-
-  local note_lines = vim.split(notes_text, "\n")
+  local note_lines = vim.split(state.notes[state.slide], "\n")
 
   local orig_modifiable = vim.bo[state.notes_buf].modifiable
   vim.bo[state.notes_buf].modifiable = true
