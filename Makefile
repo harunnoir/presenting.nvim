@@ -32,11 +32,9 @@ pre-commit:  ## Run pre-commit on all
 
 .PHONY: test
 test: deps  ## Runs all tests
-	echo "TODO: implement tests"
-	# nvim --version | head -n 1 && echo ''
-	# nvim --headless --noplugin -u ./scripts/minimal_init.lua \
-	# 	-c "lua require('mini.test').setup()" \
-	# 	-c "lua MiniTest.run({ execute = { reporter = MiniTest.gen_reporter.stdout({ group_depth = 1 }) } })"
+	nvim --headless --noplugin -u ./scripts/minimal_init.lua \
+		-c "lua require('mini.test').setup({ execute = { file_pattern = 'tests/test_*.lua' } })" \
+		-c "lua MiniTest.run({ execute = { reporter = MiniTest.gen_reporter.stdout({ group_depth = 1 }) } })"
 
 .PHONY: examples
 examples: ## Generate animated examples
