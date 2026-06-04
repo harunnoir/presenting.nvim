@@ -3,7 +3,7 @@
 `presenting.nvim` is a neovim plugin that turns your markup
 files into slides (in neovim).
 
-It is rewrite of [`presenting.vim`](https://github.com/sotte/presenting.vim/) in lua.
+It is rewrite of [`presenting.vim`](https://github.com/harunnoir/presenting.vim/) in lua.
 It simplifies the code (and removes some features).
 `presenting.vim` is a clone of [`present.vim`](https://github.com/pct/present.vim)
 which is a clone of [`presen.vim`](https://github.com/sorah/presen.vim).
@@ -43,7 +43,7 @@ Then navigate the presentation with the keys:
 This `README` is intentionally short.
 For more information,
 see `:help presenting.nvim`
-and the [documentation](https://github.com/sotte/presenting.nvim/blob/main/doc/presenting.txt).
+and the [documentation](https://github.com/harunnoir/presenting.nvim/blob/main/doc/presenting.txt).
 
 
 # Installation and Setup
@@ -51,7 +51,7 @@ and the [documentation](https://github.com/sotte/presenting.nvim/blob/main/doc/p
 With `lazy.nvim`:
 ```lua
 return {
-  "sotte/presenting.nvim",
+  "harunnoir/presenting.nvim",
   opts = {
     -- fill in your options here
     -- see :help Presenting.config

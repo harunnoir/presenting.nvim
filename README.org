@@ -7,7 +7,7 @@
 slides (in neovim).
 
 It is rewrite of
-[[https://github.com/sotte/presenting.vim/][=presenting.vim=]] in lua.
+[[https://github.com/harunnoir/presenting.vim/][=presenting.vim=]] in lua.
 It simplifies the code (and removes some features). =presenting.vim= is
 a clone of [[https://github.com/pct/present.vim][=present.vim=]] which
 is a clone of [[https://github.com/sorah/presen.vim][=presen.vim=]].
@@ -56,7 +56,7 @@ Then navigate the presentation with the keys:
 
 This =README= is intentionally short. For more information, see
 =:help presenting.nvim= and the
-[[https://github.com/sotte/presenting.nvim/blob/main/doc/presenting.txt][documentation]].
+[[https://github.com/harunnoir/presenting.nvim/blob/main/doc/presenting.txt][documentation]].
 
 * Installation and Setup
   :PROPERTIES:
@@ -67,7 +67,7 @@ With =lazy.nvim=:
 
 #+BEGIN_EXAMPLE
   return {
-    "sotte/presenting.nvim",
+    "harunnoir/presenting.nvim",
     opts = {
       -- fill in your options here
       -- see :help Presenting.config
